@@ -4,7 +4,7 @@ export const getUrlById = async (id: string | string[]) => {
   let realId: string;
 
   if (Array.isArray(id)) {
-    realId = id[0] ?? ""; // Provide a fallback in case id[0] is undefined
+    realId = id[0] ?? "https://www.youtube.com/watch?v=dQw4w9WgXcQ"; // Just rickroll the unsuspecting person before the whole application breaks.
   } else {
     realId = id;
   }
