@@ -15,7 +15,8 @@ datasource db {
 }
 
 model ShortenURL {
-    id          String @id @default(cuid())
+    uid         String @id @default(cuid())
+    id          String
     redirectURL String
 }
 
