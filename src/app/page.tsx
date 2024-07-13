@@ -1,10 +1,7 @@
 "use client";
 import { useState, type FormEvent, type ChangeEvent } from "react";
 import { z } from "zod";
-import {
-  checkRouteAvailability,
-  createShortenedURL,
-} from "../../actions/shortener";
+import { checkRouteAvailability, createShortenedURL } from "../../actions/shortener";
 import toast, { Toaster } from "react-hot-toast";
 
 const URLSchema = z.object({
@@ -15,7 +12,7 @@ const URLSchema = z.object({
 export default function Home() {
   const [realURL, setRealURL] = useState("");
   const [shortURL, setShortURL] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [disabled, setDisabled] = useState(false);
 
   const handleShortURLChange = (event: ChangeEvent<HTMLInputElement>) => {
     setShortURL(event.target.value);
@@ -27,63 +24,64 @@ export default function Home() {
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
-    setError(null);
 
     try {
-      // First, perform synchronous schema validation
       URLSchema.parse({ realURL, shortURL });
 
-      // Then, check the route availability asynchronously
+      setDisabled(true);
       const isAvailable = await checkRouteAvailability(shortURL);
       if (!isAvailable) {
-        setError("Shortener route not available");
-        toast.error(error);
+        toast.error("Shortener route not available");
+        setDisabled(false);
         return;
       }
 
       await createShortenedURL({ realUrl: realURL, shortenURL: shortURL });
 
-      if (!error) {
-        toast.success("Success");
-      } else {
-        toast.error(error);
-      }
+      toast.success("Success");
     } catch (e: unknown) {
-      setError("An unexpected error occurred");
-      toast.error(error);
+      toast.error("An unexpected error occurred");
       console.error(e);
+    } finally {
+      setShortURL('');
+      setRealURL('');
+      setDisabled(false);
     }
   };
 
   return (
-    <>
-      <Toaster />
-      <main className="flex h-screen w-screen flex-col items-center justify-center">
-        <div className="flex h-[60vh] w-[80vw] rounded-xl bg-white/40 shadow-2xl backdrop-blur-sm md:w-[40vw]">
-          <form onSubmit={submit} className="flex flex-col p-4">
-            <input
-              type="text"
-              value={realURL}
-              onChange={handleRealURLChange}
-              placeholder="Enter the real URL"
-              className="mb-2 rounded border p-2"
-            />
-            <input
-              type="text"
-              value={shortURL}
-              onChange={handleShortURLChange}
-              placeholder="Enter the short URL path"
-              className="mb-2 rounded border p-2"
-            />
-            <button
-              type="submit"
-              className="rounded bg-blue-500 p-2 text-white"
-            >
-              Submit
-            </button>
-          </form>
-        </div>
-      </main>
-    </>
+      <>
+        <Toaster />
+        <main className="flex h-screen w-screen flex-col items-center justify-center overflow-hidden">
+          <div className="flex h-auto w-full sm:w-[60vw] md:w-[40vw] lg:w-[30vw] xl:w-[20vw] rounded-xl bg-gray-900/50 shadow-2xl justify-center backdrop-blur-xxl p-4 sm:p-6">
+            <form onSubmit={submit} className="flex flex-col w-full">
+              <div className="text-center text-2xl sm:text-3xl md:text-4xl text-white font-bold mb-4 sm:mb-6">
+                <h1 className='text-2xl sm:text-3xl md:text-4xl text-white font-bold bg-gradient-to-r from-blue-950 to-indigo-800 bg-clip-text text-transparent'>Shorten your URL</h1>
+              </div>
+              <input
+                  type="text"
+                  value={realURL}
+                  onChange={handleRealURLChange}
+                  placeholder="Enter the real URL"
+                  className="mb-2 sm:mb-3 rounded border  p-2 sm:p-3 w-full bg-gray-900/50 backdrop-blur-xxl"
+              />
+              <input
+                  type="text"
+                  value={shortURL}
+                  onChange={handleShortURLChange}
+                  placeholder="Enter the short URL path"
+                  className="mb-4 sm:mb-5 rounded  p-2 sm:p-3 w-full bg-gray-900/50 backdrop-blur-xxl"
+              />
+              <button
+                  type="submit"
+                  disabled={disabled}
+                  className={`rounded p-2 sm:p-3 text-white ${disabled ? 'bg-gray-400' : 'bg-indigo-500 hover:bg-green-600 focus:ring-2 focus:ring-green-500 focus:ring-opacity-50'} w-full`}
+              >
+                {disabled ? 'Loading...' : 'Submit'}
+              </button>
+            </form>
+          </div>
+        </main>
+      </>
   );
 }

@@ -18,13 +18,21 @@
             transparent 360deg);
 }
 
-html,
-body {
-    @apply w-screen h-screen m-0 overflow-hidden;
+html, body {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    box-sizing: border-box;
 }
 
 body {
-    @apply flex justify-center items-center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    min-width: 100vw;
 }
 
 body::before,
